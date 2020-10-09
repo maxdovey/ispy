@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css?family=Overpass:400');
+
+.polygon {
+  stroke: black;
+}
+
+
+html, body {
+ margin: 0;
+ padding: 0;
+ position: relative;
+ font-family: 'Overpass', sans-serif;
+}
+
+.container{
+  width: 100vw;
+  height: 100vh;
+  margin: 0 auto;
+ }
+
+#map{
+  height: 50%;
+  width: 100%;
+}
+
+a {
+ font-family: 'Overpass', sans-serif;
+ font-size: 0.8em;
+ font-style: none;
+ text-align: center;
+}
+.container{
+   box-sizing: border-box;
+   position: relative;
+   text-align: center;
+ }
+
+#Menu-Box {
+     margin-top: 20px;
+}
+
+
+table {
+  margin: 0 auto; /* or margin: 0 auto 0 auto */
+}
+
+
+.block {
+  display: block;
+  width: 100%;
+  padding: 14px 28px;
+  background-color: #ffffff;
+  box-sizing:border-box;
+  -moz-box-sizing:border-box;
+  border:1px solid #000;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  margin-right: 20px;
+}
+
+.block p {
+  font-size: 1.2em;
+  color: black;
+}

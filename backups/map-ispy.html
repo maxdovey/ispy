@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<!-- https://www.sitepoint.com/create-a-polyline-using-the-geolocation-and-the-google-maps-api/ -->
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/maps3.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <script>
+    // Save the positions' history
+    var path = [];
+    // create map variable
+    var map;
+    // create polyline
+    var poly;
+    // global arrays for the Longitude and Latitude
+    var Lat = [];
+    var Long = [];
+    var Surname = [];
+    var Alphabet = ['A', 'B','C', 'D', 'E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
+    function Initalize_Map() {
+    map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 22,
+      center : path[0],
+      mapTypeId: 'satellite',
+      });
+      map.setTilt(0);
+  };
+    var options = {
+      enableHighAccuracy: true,
+      timeout: 10 * 1000 // 10 seconds
+  };
+    setInterval(function TrackPosition() {
+    navigator.geolocation.getCurrentPosition(success, error, options);
+  },10000);
+
+    function success(position) {
+    console.log(path);
+    // print Co-ordinates (and write them somewhere)
+    console.log(`Latitude : ${position.coords.latitude}`);
+    Lat.push(position.coords.latitude);
+    console.log(`Longitude: ${position.coords.longitude}`);
+    Long.push(position.coords.longitude);
+    var latLngBounds = new google.maps.LatLngBounds();
+    for(var i = 0; i < path.length; i++) {
+      latLngBounds.extend(path[i]);
+    }
+    var poly = new google.maps.Polyline({
+      map: map,
+      path: path,
+      strokeColor: '#050000',
+      strokeOpacity: 1,
+      strokeWeight: 4
+      });
+    // Save the current position
+    path.push(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    var route = poly.getPath();
+    //draw the polyline
+    poly.setPath(route);
+    // Fit the bounds of the generated points
+    map.fitBounds(latLngBounds);
+    };
+
+    function error(err) {
+      console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
+    //load the map when the page loads
+    $(document).ready(function() {
+      Initalize_Map();
+    });
+    // text form
+    function Text_Submit() {
+      var text_submission = $("#myTextBox").val();
+      console.log(text_submission);
+      // alert(text_submission);
+      $("#myTextBox").val('');
+      Write_Info_Window(text_submission);
+      Update_XML(text_submission);
+    }
+
+    function Write_Info_Window (text_submission) {
+    var text_entry = text_submission;
+    var Last_Location = path[path.length -1];
+    var infowindow = new google.maps.InfoWindow({
+      content: text_entry
+    });
+
+    var marker = new google.maps.Marker({
+      position: Last_Location,
+      map: map
+    });
+    marker.addListener('click', function() {
+      infowindow.open(map, marker);
+    });
+    }
+    //onclick login button make xml with firstname and secondname as xml file.
+    function Generate_XML() {
+      var Obj = $('form').serializeArray();
+      var lastname = Obj[1]["value"];
+      Surname.push(lastname);
+      $('.fade-wrapper').fadeOut();
+      $.post( "php/make_xml.php",{data:lastname},function(data){
+        console.log(data);
+        });
+    }
+    // update xml file with new text submission
+    function Update_XML(text_submission) {
+      var Text_entry = text_submission;
+      var Lats = Lat[Lat.length -1];
+      var Longs =Long[Long.length -1];
+      var title = Surname[Surname.length -1];
+      $.post( "php/Update_xml2.php",
+      {name: title,
+      LatData:Lats,
+      LongData:Longs,
+      CommentData:Text_entry},function(data){
+      console.log(data);
+      Next_Letter();
+      });
+    }
+    $(document).ready(function(){
+    $('.button').click(function(){
+        $('.fade-wrapper').fadeIn();
+    });
+});
+    function Next_Letter(){
+      var currentPos = $("#Char").text();
+      Pos = $.inArray(currentPos,Alphabet)
+      $("#Char").text(Alphabet[Pos+1]);
+    }
+
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCovxMZ_HZ-n1oqWG8Gs-1jWnbYl8zk-88&callback=Initalize_Map">
+    </script>
+  </head>
+  <body>
+    <div class="fade-wrapper">
+      <div id="box">
+    <form>
+      First Name<br>
+      <input type="text" name="firstname"><br>
+      Last Name<br>
+      <input type="text" name="lastname"><br>
+      <br>
+      <button type="button" onclick="Generate_XML()">Begin</button>
+    </form>
+    </div>
+    </div>
+    <div class="container">
+    <div id="map_container"></div>
+      <div id="map"></div>
+      <p id="error"></p>
+
+      <div id="menu">
+        <a>
+          I Spy<br>
+          With My Little Eye<br>
+          Something Beginning With...<div id="Char">A</div><br>
+          <br>
+      <textarea id="myTextBox" rows="8">
+      </textarea>
+      <br>
+      <button type="button" class="block" onclick="Text_Submit()"><a> Submit</a></button>
+
+     </div>
+
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css?family=Overpass:300i,400&display=swap');
+
+html, body {
+ margin: 0;
+ padding: 0;
+ position: relative;
+ width: 100vw;
+ height: 100vh;
+}
+
+a {
+ font-family: 'Overpass', sans-serif;
+ font-size: 1.2em;
+ font-style: italic;
+ text-align: center;
+}
+
+p {
+ font-family: 'Overpass', sans-serif;
+ font-size: 1.2em;
+ font-style: none;
+ text-align: center;
+}
+
+
+.container{
+  width: 100vw;
+  height: 100vh;
+  margin: 0 auto;
+ }
+
+#map{
+  height: 40%;
+
+}
+#form {
+  font-family: 'Overpass', sans-serif;
+}
+
+/* Optional: Makes the sample page fill the window. */
+
+#menu {
+box-sizing: border-box;
+position: relative;
+/* width: 100%; */
+height: auto;
+margin-left: 20px;
+margin-right: 20px;
+margin-top: 20px;
+text-align: center;
+}
+
+#menu a {
+font-size: 1.8em;
+}
+
+#name {
+  box-sizing:border-box;
+  -moz-box-sizing:border-box;
+  border:1px solid #000;
+  width: 100%;
+  padding-top: 14px;
+  padding-right: 28px;
+  padding-bottom: 14px;
+}
+
+textarea {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+width: 100%;
+height: 100%;
+font-family: 'Overpass', sans-serif;
+font-size: 1.2em;
+}
+
+.fade-wrapper {
+position: fixed;
+left: 0;
+top: 0;
+left: 0;
+bottom: 0;
+width: 100vw;
+height: 100vh;
+text-align:center;
+/*Flexbox*/
+display: flex;
+align-items: center;
+align-content: center;
+justify-content: center;
+z-index: 200;
+background-color: rgba(7, 8, 0, 0.2);
+}
+
+#box {
+background-color: #ffffff;
+z-index: 200;
+display: inline-block;
+padding: 20px 20px 20px 20px;
+border:1px solid #000;
+}
+
+#Char {
+  font-family: 'Overpass', sans-serif;
+  font-size: 4.2em;
+}
+
+.block {
+  display: block;
+  width: 100%;
+  padding: 14px 28px;
+  background-color: #ffffff;
+  box-sizing:border-box;
+  -moz-box-sizing:border-box;
+  border:1px solid #000;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.block p {
+  font-size: 1.2em;
+  color: black;
+}
+/*
+.block:active{
+  background-color: #FFE2FE;
+} */

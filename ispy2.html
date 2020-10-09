@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/maps3.css">
+    <script src="js/jquery.min.js"></script>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <script>
+    // Save the positions' history
+    var path = [];
+    // create map variable
+    var map;
+    // create polyline
+    var poly;
+    // global arrays for the Longitude and Latitude
+    var Lat = [];
+    var Long = [];
+    var Surname = [];
+    var Alphabet = ['A', 'B','C', 'D', 'E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','Ä','Ö','Ü'];
+    var counter = 0;
+    // to change back to standard map choose "google.maps.MapTypeId.ROADMAP"
+
+    function Initalize_Map() {
+    map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 22,
+      center : path[0],
+      mapTypeId: 'satellite'
+      });
+      map.setTilt(0);
+  };
+
+    var options = {
+      enableHighAccuracy: true,
+      timeout: 10 * 1000 // 10 seconds
+  };
+
+
+    function success(position) {
+    console.log(path);
+    // print Co-ordinates (and write them somewhere)
+    console.log(`Latitude : ${position.coords.latitude}`);
+    Lat.push(position.coords.latitude);
+    console.log(`Longitude: ${position.coords.longitude}`);
+    Long.push(position.coords.longitude);
+    var latLngBounds = new google.maps.LatLngBounds();
+    for(var i = 0; i < path.length; i++) {
+      latLngBounds.extend(path[i]);
+    }
+    var poly = new google.maps.Polyline({
+      map: map,
+      path: path,
+      strokeColor: '#050000',
+      strokeOpacity: 1,
+      strokeWeight: 4
+      });
+    // Save the current position
+    path.push(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    var route = poly.getPath();
+    //draw the polyline
+    poly.setPath(route);
+    // Fit the bounds of the generated points
+    map.fitBounds(latLngBounds);
+    };
+
+    function error(err) {
+      console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
+
+    // text form
+    function Text_Submit() {
+      var text_submission = $("#myTextBox").val();
+      console.log(text_submission);
+      // alert(text_submission);
+      $("#myTextBox").val('');
+      Write_Info_Window(text_submission);
+      Update_XML(text_submission);
+      $("#myTextBox").focus();
+    }
+
+    function Write_Info_Window (text_submission) {
+    var text_entry = text_submission;
+    var Last_Location = path[path.length -1];
+    var infowindow = new google.maps.InfoWindow({
+      content: text_entry
+    });
+
+    var marker = new google.maps.Marker({
+      position: Last_Location,
+      map: map
+    });
+    marker.addListener('click', function() {
+      infowindow.open(map, marker);
+    });
+    }
+    //onclick login button make xml with name as xml file.
+    function Generate_XML() {
+      var Obj = $('form').serializeArray();
+      var lastname = Obj[0]["value"];
+      Surname.push(lastname);
+      $('.fade-wrapper').fadeOut();
+      $.post( "php/make_xml.php",{data:lastname},function(data){
+        console.log(data);
+        });
+    }
+    // update xml file with new text submission
+    function Update_XML(text_submission) {
+      var Text_entry = text_submission;
+      var Lats = Lat[Lat.length -1];
+      var Longs =Long[Long.length -1];
+      var title = Surname[Surname.length -1];
+      $.post( "php/Update_xml2.php",
+      {name: title,
+      LatData:Lats,
+      LongData:Longs,
+      CommentData:Text_entry},function(data){
+      console.log(data);
+      counter += 1;
+      Next_Letter();
+      });
+    }
+    $(document).ready(function(){
+    $('.button').click(function(){
+        $('.fade-wrapper').fadeIn();
+    });
+});
+
+      function RandomChar() {
+        var rand_Char = Alphabet[Math.floor(Math.random() * Alphabet.length)];
+        console.log(rand_Char);
+        $("#Char").text(rand_Char);
+      }
+
+      function Next_Letter() {
+        if (counter < 26) {
+        $("#Char").text(randomAlphabet[counter]);
+        }
+        else {
+          $("#intro").html('<p>You have completed all the letters in the alphabet<br>Please write any further observations as you wish</p>');
+          $("#Char").text('');
+        }
+      }
+
+      function ShuffleLetters(Alphabet){
+        var i = Alphabet.length,
+        j = 0
+        var temp;
+
+        while (i--) {
+          j = Math.floor(Math.random() * (i+1));
+          temp = Alphabet[i];
+          Alphabet[i] = Alphabet[j];
+          Alphabet[j] = temp;
+        }
+
+        return Alphabet;
+
+      }
+
+var randomAlphabet = ShuffleLetters(Alphabet);
+
+
+    //load the map when the page loads
+    $(document).ready(function() {
+      $("#myTextBox").focus();
+      setInterval(function TrackPosition() {
+      navigator.geolocation.getCurrentPosition(success, error, options);
+    },10000);
+    });
+
+    </script>
+
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCovxMZ_HZ-n1oqWG8Gs-1jWnbYl8zk-88&callback=Initalize_Map">
+    </script>
+
+  </head>
+  <body>
+    <div class="container">
+    <div class="fade-wrapper">
+      <div id="box">
+        <p> As you drive through the city we will play a game of <br>
+        'I spy' <br>
+        <p>
+          Please write down what you experience from your taxi <br> in either Deutsch or English.<br>
+          <br>
+
+            Enter your name to start your ride </p>
+    <form>
+      <input id="name" type="text" name="lastname"><br>
+      <br>
+      <button id="enter" class="block" type="button" onclick="Generate_XML()"><p>Begin</p></button>
+    </form>
+    </div>
+    </div>
+
+      <div id="map"></div>
+      <p id="error"></p>
+
+      <div id="menu">
+        <div id ="intro">
+        <a>
+          I spy,<br>
+          with my little eye,<br>
+          something beginning with...</a>
+        </div>
+          <div id="Char">A</div>
+      <textarea id="myTextBox" rows="4" autofocus>
+      </textarea>
+      <br>
+      <button id="submit-text" type="button" class="block" onclick="Text_Submit()"><p>Submit</p></button>
+      <button id="submit-text" type="button" class="block" onclick="RandomChar()"><p>Next</p></button>
+
+     </div>
+
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Cologne, What is Your Mother's Maiden Name </title>
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin=""/>
+    <link rel="stylesheet" type="text/css" href="css/draw-report.css">
+<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+crossorigin=""></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<body>
+
+
+
+  <div class ="container">
+    <div id="map"></div>
+    <div id="sunburst_chart">
+      <img src="../../img/cologne1.png" </img>
+    </div>
+  <div class="Menu-Box">
+    <form>
+    Select a Passenger:
+    <select id="foo" id="bar" onchange="showCD(this.value)">
+    <option value="">Select a File</option>
+    </select>
+    </form>
+
+<div id="txtRight">
+  <button  type="button" class="block" onclick="Reveal()">Analyze</button>
+<div id="analysis">
+   <p>
+  You are informal, somewhat inconsiderate and skeptical. <br>
+
+  You are carefree: you do what you want, disregarding rules and obligations. <br> You are self-conscious: you are sensitive about what others might be thinking about you. <br>
+  And you are prone to worry: you tend to worry about things that might happen. <br>
+  Your choices are driven by a desire for efficiency. <br>
+  You are relatively unconcerned with tradition:  <br> you care more about making your own path than following what others have done. <br> You consider taking pleasure in life to guide a large part of what you do: you are highly motivated to enjoy life to its fullest.</p>
+    <!--  -->
+    <!-- <button type="submit" class="base--button input--submit-button2"><$= __("button-analyze") $></button> -->
+</div>
+</div>
+  <div id="txtHint">
+
+    <button  type="button" class="block" onclick="Select()">Select Ride</button>
+     <button  type="button" class="block" onclick="addMarkers2()">Plot Ride</button>
+     <button  type="button" class="block" onclick="location.reload()">Refresh</button>
+  <table id="table">
+  </table>
+   </div>
+
+
+
+  </div>
+</div>
+
+  <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="js/leaflet.browser.print-master/dist/leaflet.browser.print.min.js"></script>
+
+  <script type="text/javascript">
+  var parser, xmlDoc;
+  var filename_list = [];
+  var marker = [];
+  var latLng = [];
+  var array = [];
+  var locations = [];
+  var texts = [];
+  var map = L.map('map').setView([50.950854, 6.9556171], 15);
+  var tiles = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 28,
+    id: 'mapbox.mapbox-streets-v8',
+    accessToken: 'pk.eyJ1IjoibWF4ZG92ZXkiLCJhIjoiY2p3Z3AyOWlrMGNsNTN6bzJqN3I0d3AxayJ9.O3Zey2QiH0cxihwijpepgw'
+}).addTo(map);
+    // L.control.browserPrint().addTo(map)
+
+  // get names of all reports (files ending in .xml) on server in journeys folder
+  function Get_All_Reports() {
+  $.get( "php/scan.php", function(data) {
+    console.log(data);
+    $.each(JSON.parse(data), function (i, elem) {
+        console.log(elem);
+        filename_list.push(elem);
+      })
+    }
+  )};
+  // show all these files in a form
+  function Make_Form (){
+  $.each(filename_list, function (i, item) {
+      $('#foo').append($('<option>', {
+          value: item,
+          text : item
+      }));
+  });
+  }
+
+
+  // make the request to retrieve.php with the menu item as q to pass to retreive.php
+  // retrieve.php should return the co-ordinate data from the xml file named q wrapped in table divs to be posted directly into DOM (in this case div named table)
+
+  function showCD(str) {
+    if (str=="") {
+      document.getElementById("txtHint").innerHTML="";
+      return;
+    }
+    if (window.XMLHttpRequest) {
+      // code for IE7+, Firefox, Chrome, Opera, Safari
+      xmlhttp=new XMLHttpRequest();
+    } else {  // code for IE6, IE5
+      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange=function(data) {
+      if (this.readyState==4 && this.status==200) {
+        console.log(data);
+        document.getElementById("table").innerHTML=this.response;
+      }
+    }
+    xmlhttp.open("GET","php/retrieve.php?q="+str,true);
+    xmlhttp.send();
+  }
+
+  // turns html table into JS array with 3 items in each entry Lat,Lng,comment
+  function Select(){
+  $('#table').css( "background-color", "yellow" );
+  locations = Array.prototype.map.call(document.querySelectorAll('#table tr'), function(tr){
+    return Array.prototype.map.call(tr.querySelectorAll('td'), function(td){
+      return td.innerHTML;
+      });
+  });
+}
+
+function Select2 () {
+  for (var i = 0; i < locations.length; i++){
+    console.log(locations[i][2]);
+    texts.push(locations[i][2]);
+    $('#txtRight-entry').text(texts);
+  }
+};
+function Reveal () {
+  $('#analysis').show();
+}
+
+  $.when($.ajax(Get_All_Reports())).then(function () {
+     Make_Form();
+  });
+
+  L.Popup.options = {
+      autoClose: false,
+      closeButon: false
+  };
+
+  L.marker.options = {
+    autoClose: false,
+    closeButon: false
+  }
+
+function AddMarkers(){
+  locations.shift();
+  for (var i = 0; i < locations.length; i++) {
+  var m = new L.marker([locations[i][0],locations[i][1]]).addTo(map),
+  p = new L.Popup({ autoClose: false, closeOnClick: false })
+    .setContent(locations[i][2])
+    .setLatLng(([locations[i][0],locations[i][1]]));
+  m.bindPopup(p);
+  }
+};
+
+  //This maps all the location information from locations array and plots it onto the map
+function addMarkers2(){
+      try {
+        AddMarkers();
+		    }
+      catch(err) {
+        console.log(err);
+        }
+  };
+
+  var customActionToPrint = function(context, mode) {
+	return function() {
+		window.alert("We are printing the MAP. Let's do Custom print here!");
+		context._printCustom(mode);
+	}
+}
+
+  L.control.browserPrint({
+  	closePopupsOnPrint: false,
+  	printModes: [
+  		L.control.browserPrint.mode.landscape("TABLOID VIEW", "tabloid"),
+  		L.control.browserPrint.mode("Alert", "User specified print action", "A6", customActionToPrint, false),
+  		L.control.browserPrint.mode.landscape(),
+  		"Portrait",
+  		L.control.browserPrint.mode.auto("Automatico", "B4"),
+  		L.control.browserPrint.mode.custom("Custom Selection", "B5")
+  	],
+  	manualMode: false
+  }).addTo(map);
+
+  $(document).ready(function(){
+    Get_All_Reports();
+  }
+);
+
+  </script>
+
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-url-parser/2.3.1/purl.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/5.0.2/markdown-it.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js"></script>
+
+  <script type="text/javascript" src="js/vendors/q.js"></script>
+  <script type="text/javascript" src="js/components/q_util.js"></script>
+  <script type="text/javascript" src="js/components/tab-panels.js"></script>
+
+  <script type="text/javascript" src="vendor/personality-text-summary/dist/index.js"></script>
+  <script type="text/javascript" src="vendor/personality-trait-info/dist/index.js"></script>
+  <script type="text/javascript" src="vendor/personality-trait-descriptions/dist/index.js"></script>
+  <script type="text/javascript" src="vendor/personality-trait-names/dist/index.js"></script>
+  <script type="text/javascript" src="vendor/personality-consumption-preferences/dist/index.js"></script>
+  <script type="text/javascript" src="js/sunburst.js"></script>
+
+  <script type="text/javascript" src="js/demo.js"></script>
+  <script type="text/javascript" src="js/consumption-preferences-likely-sort.js"></script>
+  <script type="text/javascript" src="js/consumption-preferences-unlikely-sort.js"></script>
+</html>

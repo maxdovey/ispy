@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!-- https://www.sitepoint.com/create-a-polyline-using-the-geolocation-and-the-google-maps-api/ -->
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/maps3.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <script>
+    // Save the positions' history
+    var path = [];
+    // create map variable
+    var map;
+    // create polyline
+    var poly;
+
+    function Initalize_Map() {
+    map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 22,
+      center : path[0],
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+      });
+  };
+    var options = {
+      enableHighAccuracy: true,
+      timeout: 10 * 1000 // 10 seconds
+  };
+    setInterval(function TrackPosition() {
+    navigator.geolocation.getCurrentPosition(success, error, options);
+  },10000);
+
+    function success(position) {
+
+    console.log(path);
+    // print Co-ordinates (and write them somewhere)
+    console.log(`Latitude : ${position.coords.latitude}`);
+    console.log(`Longitude: ${position.coords.longitude}`);
+    var latLngBounds = new google.maps.LatLngBounds();
+    for(var i = 0; i < path.length; i++) {
+      latLngBounds.extend(path[i]);
+    }
+    var poly = new google.maps.Polyline({
+      map: map,
+      path: path,
+      strokeColor: '#050000',
+      strokeOpacity: 1,
+      strokeWeight: 4
+      });
+    // Save the current position
+    path.push(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    var route = poly.getPath();
+    //draw the polyline
+    poly.setPath(route);
+    // Fit the bounds of the generated points
+    map.fitBounds(latLngBounds);
+    };
+
+    function error(err) {
+      console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
+    //load the map when the page loads
+    $(document).ready(function() {
+      Initalize_Map();
+    });
+    // text form
+    function Text_Submit() {
+      var text_submission = $("#myTextBox").val();
+      console.log(text_submission);
+      $("#myTextBox").val('');
+      Write_Info_Window(text_submission);
+    }
+    // this function sends content from the textarea to the map and shows it in the infowindow
+    function Write_Info_Window (text_submission) {
+    var text_entry = text_submission;
+    var Last_Location = path[path.length -1];
+    var infowindow = new google.maps.InfoWindow({
+      content: text_entry
+    });
+
+    var marker = new google.maps.Marker({
+      position: Last_Location,
+      map: map
+    });
+    marker.addListener('click', function() {
+      infowindow.open(map, marker);
+    });
+    }
+
+
+
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCovxMZ_HZ-n1oqWG8Gs-1jWnbYl8zk-88&callback=Initalize_Map">
+    </script>
+  </head>
+  <body>
+    <div class="container">
+    <div id="map_container"></div>
+      <div id="map"></div>
+      <p id="error"></p>
+    <div id="menu">
+      <a>
+        I am not from around here<br>
+        As you drive, tell me about your journey through the city <br>
+        Write about what you can see, smell and feel <br>
+        <br>
+    <textarea id="myTextBox" rows="8">
+    </textarea>
+    <br>
+    <button type="button" class="block" onclick="Text_Submit()"><a> Submit</a></button>
+
+   </div>
+
+
+    </div>
+  </body>
+</html>
